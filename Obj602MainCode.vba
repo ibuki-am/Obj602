@@ -94,7 +94,6 @@ Sub MainSearchProcess()
         End If
     Next iLoop
     
-    
     If iInnerNum = 0 Then '検索条件未入力
         '//////////////////////////////////////////////////////////////////////////////////
         '//検索条件なし＝全件表示 を実装(予定)
@@ -104,12 +103,42 @@ Sub MainSearchProcess()
         '//////////////////////////////////////////////////////////////////////////////////
         '//チェック機構挿入部
         '//////////////////////////////////////////////////////////////////////////////////
-        '対象のブックを順に検索していく
+            '対象のブックを順に検索していく
+        Const sDatePath As String = "C:\Users\ibuki_k\OneDrive\Excel"
         Dim iLoopBook As Long
-        For iLoop = 1 To UBound(iSrchCriteria)
-                    '何番目の検索キーか?を判定
-                    iSrchCriteria (iLoop)
-                Next iLoop
+        Dim sInputDate() As variant
+        Dim sFilePath As String
+        Dim iWidthInput As Long
+        Dim iHeightInput As Long
+        Dim sFileName As String
+        Dim ws As Worksheet
+        Dim wb As WorkBooks
+        For iLoopBook = 1 To ListBox4.ListCount
+            sFileName = sFileListForRead(iLoopBook)
+            '対象のブックが既に開かれていないかをチェック
+            '///////////////////////////////////////////////////////
+            '既に開かれているかのチェックは、合ってもよいが
+            'そのファイルをそのまま利用するのはだめか？→要検討
+            '///////////////////////////////////////////////////////
+            For Each wb In WorkBooks
+                If wb.Name = sFileName Then
+                    MsgBox "「" & sFileName & "」はすでに開かれています。ブックを閉じてください" 
+                    Exit Sub
+                End If
+            '対象のブックを読み込む
+            sFilePath = sDatePath &"\"& sFileName
+            Set wb = WorkBooks.Open( sFilePath )
+            Set ws = wb.Worksheets(1)
+            '対象ブックのデータを読み込む(範囲の対象を読み取る→データを配列に読込)
+            iHeightInput = ws.cells(Rows.Count,1).End(xlUp)
+            iWidthInput = ws.cells(1,Colmun.Count).End(xlToLeft)
+            'データ読込
+            sInputData = ws.Range(cells(1,1),Cells(iHeightInput,iWidthInput)).Value
+            For iLoop = 1 To UBound(iSrchCriteria)
+                '何番目の検索キーか?を判定
+                iSrchCriteria (iLoop)
+            Next iLoop
+        Next iLoopBook
         '//////////////////////////////////////////////////////////////////////////////////
         '//検索条件あり＝選択されたブックごとにデータを読込→1条件ごとに順繰り検索していく
         'インプット＝iSrchCruteria()
